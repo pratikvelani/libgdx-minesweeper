@@ -4,8 +4,8 @@ gwt {
     minHeapSize="1G"
 
     src = files(file("src/")) // Needs to be in front of "modules" below.
-    modules 'com.pratikvelani.minesweepr.GdxDefinition'
-    devModules 'com.pratikvelani.minesweepr.GdxDefinitionSuperdev'
+    modules 'com.pratikvelani.minesweeper.GdxDefinition'
+    devModules 'com.pratikvelani.minesweeper.GdxDefinitionSuperdev'
     project.webAppDirName = 'webapp'
 
     compiler {

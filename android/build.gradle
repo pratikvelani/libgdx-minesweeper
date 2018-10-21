@@ -17,7 +17,7 @@ android {
         exclude 'META-INF/robovm/ios/robovm.xml'
     }
     defaultConfig {
-        applicationId "com.pratikvelani.minesweepr"
+        applicationId "com.pratikvelani.minesweeper"
         minSdkVersion 9
         targetSdkVersion 27
         versionCode 1
@@ -86,7 +86,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.pratikvelani.minesweepr/com.pratikvelani.minesweepr.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.pratikvelani.minesweeper/com.pratikvelani.minesweeper.AndroidLauncher'
 }
 
 // sets up the Android Eclipse project, using the old Ant based build.
