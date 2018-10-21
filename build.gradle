@@ -12,6 +12,7 @@ buildscript {
     dependencies {
         classpath 'org.wisepersist:gwt-gradle-plugin:1.0.6'
         classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.5'
         
 
     }
@@ -23,7 +24,7 @@ allprojects {
 
     version = '1.0'
     ext {
-        appName = "bombsweeper"
+        appName = "minesweeper"
         gdxVersion = '1.9.8'
         roboVMVersion = '2.3.5'
         box2DLightsVersion = '1.4'
@@ -69,12 +70,17 @@ project(":android") {
     }
 }
 
-project(":core") {
+project(":ios") {
     apply plugin: "java"
+    apply plugin: "robovm"
 
 
     dependencies {
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile project(":core")
+        compile "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
+        compile "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
+        compile "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
         
     }
 }
@@ -89,6 +95,16 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
+        
+    }
+}
+
+project(":core") {
+    apply plugin: "java"
+
+
+    dependencies {
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         
     }
 }
