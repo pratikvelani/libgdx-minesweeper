@@ -11,6 +11,7 @@ public class Assets {
     private static Assets instance = new Assets();
 
     static final public String TEXTURE_BADLOGIC = "badlogic.jpg";
+    static final public String TEXTURE_TILE = "tile.jpg";
 
     private AssetManager manager = new AssetManager();
 
@@ -24,6 +25,7 @@ public class Assets {
 
     public void load () {
         manager.load(TEXTURE_BADLOGIC, Texture.class);
+        manager.load(TEXTURE_TILE, Texture.class);
     }
 
     public void loadSync () {

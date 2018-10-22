@@ -16,10 +16,15 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 import com.pratikvelani.minesweeper.GdxGame;
+import com.pratikvelani.minesweeper.actors.BaseActor;
+import com.pratikvelani.minesweeper.actors.TileActor;
 import com.pratikvelani.minesweeper.g3d.ClickAdapter;
-import com.pratikvelani.minesweeper.toolbox.Assets;
+
+import java.util.ArrayList;
 
 
 public class GameScreen extends ClickAdapter implements Screen {
@@ -35,8 +40,12 @@ public class GameScreen extends ClickAdapter implements Screen {
     private Environment environment;
     private ModelBatch modelBatch;
     private PerspectiveCamera cam;
-    private CameraInputController camController;
 
+    private CameraInputController camController;
+    private FirstPersonCameraController firstPersonCameraController;
+
+    //private ArrayList<BaseActor> models = new ArrayList<BaseActor>();
+    private ArrayList<TileActor> tiles = new ArrayList<TileActor>();
     public ModelInstance ground;
 
     private ModelInstance debugBall;
@@ -72,10 +81,15 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         //floorInstance.transform.setTranslation(distX / Constants.THREED_SCALE, 0, distY / Constants.THREED_SCALE);
         ground.calculateTransforms();*/
+
+        setupTiles ();
     }
 
     @Override
     public void render(float delta) {
+        camController.update();
+        firstPersonCameraController.update(delta);
+
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
@@ -89,6 +103,10 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         modelBatch.begin(cam);
         //modelBatch.render(ground, environment);
+
+        for (TileActor actor: tiles) {
+            modelBatch.render(actor, environment);
+        }
 
         modelBatch.render(debugBall, environment);
 
@@ -120,6 +138,32 @@ public class GameScreen extends ClickAdapter implements Screen {
         batch.dispose();
     }
 
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return super.touchDown(screenX, screenY, pointer, button);
+    }
+
+    @Override
+    public boolean touchDragged (int screenX, int screenY, int pointer) {
+        return super.touchDragged(screenX, screenY, pointer);
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        Gdx.app.log(TAG, "mouseMoved ::" + screenX +"::"+ screenY);
+        return super.mouseMoved(screenX, screenY);
+    }
+
+    @Override
+    public boolean touchUp (int screenX, int screenY, int pointer, int button) {
+        return super.touchUp(screenX, screenY, pointer, button);
+    }
+
+    @Override
+    public void clicked(float x, float y) {
+        super.clicked(x, y);
+    }
+
     private void setupEnvironment () {
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -130,7 +174,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         modelBatch = new ModelBatch();
 
         cam = new PerspectiveCamera(FOV, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 100f, 10f);
+        cam.position.set(0f, 0f, 50f);
         cam.lookAt(0,0,0);
         cam.near = 1f;
         cam.far = 300f;
@@ -139,7 +183,12 @@ public class GameScreen extends ClickAdapter implements Screen {
         camController = new CameraInputController(cam);
         camController.pinchZoomFactor = 100f;
 
-        Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
+        firstPersonCameraController = new FirstPersonCameraController(cam);
+        firstPersonCameraController.setDegreesPerPixel(0.1f);
+        firstPersonCameraController.setVelocity(10);
+
+        //Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
+        Gdx.input.setInputProcessor(new InputMultiplexer(firstPersonCameraController));
 
         // DRAWING DEBUG BALL
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -149,5 +198,34 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         debugBall = new ModelInstance(model);
         debugBall.calculateTransforms();
+    }
+
+    private void setupTiles () {
+
+        int x=0, y=0;
+        int mrows = 9;
+        int mcols = 9;
+
+        int tileW = 10;
+        int offset = 5;
+
+        for (x=0; x<mrows; x++) {
+            for (y=0; y<mcols; y++) {
+                float posX = tileW*x+offset*x;
+                float posY = tileW*y+offset*y;
+                float length = tileW;
+                float breadth = tileW;
+                float height = tileW;
+
+                createTile(new Vector3(posX, posY, 0), length, breadth, height);
+            }
+        }
+    }
+
+    private void createTile (Vector3 p1, float length, float breadth, float height) {
+        TileActor stackActor = TileActor.Factory.createStack(p1, length, breadth, height);
+        tiles.add(stackActor);
+
+        //models.add(stackActor);
     }
 }
