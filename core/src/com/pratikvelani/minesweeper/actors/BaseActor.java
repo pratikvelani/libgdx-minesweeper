@@ -29,11 +29,12 @@ public class BaseActor extends ModelInstance {
 
     public BaseActor(Model model, Matrix4 transform) {
         super(model, transform);
-        calculateBoundingBox(bounds);
+        /*calculateBoundingBox(bounds);
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
 
-        radius = dimensions.len() / 2f;
+        radius = dimensions.len() / 2f;*/
+        radius = 0;
     }
 
     public void updateBounds () {
@@ -42,23 +43,7 @@ public class BaseActor extends ModelInstance {
         bounds.getDimensions(dimensions);
     }
 
-    static public class Factory {
+    public void act (float deltaTime) {
 
-        static public TileActor createStack (Vector3 point, float length, float breadth, float height) {
-            //float height = Constants.DEFAULT_WALL_HEIGHT / 2;
-
-            Texture texture = Assets.getInstance().getTexture(Assets.TEXTURE_TILE);
-            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            Material material = new Material(TextureAttribute.createDiffuse(texture), ColorAttribute.createSpecular(1, 1, 1, 1), FloatAttribute.createShininess(16f));
-            long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates;
-
-            ModelBuilder modelBuilder = new ModelBuilder();
-            Model model = modelBuilder.createBox(length, height, breadth,
-                    material, attributes);
-            TileActor actor = new TileActor(model, new Matrix4().setToTranslation(point.x, point.y, point.z));
-            actor.calculateTransforms();
-            actor.updateBounds();
-            return actor;
-        }
     }
 }

@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.SpotLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
@@ -55,12 +56,11 @@ public class GameScreen extends ClickAdapter implements Screen {
         super ();
         this.game = game;
 
-        batch = new SpriteBatch();
-
         init ();
     }
 
     private void init () {
+        batch = new SpriteBatch();
         setupEnvironment();
     }
 
@@ -88,7 +88,7 @@ public class GameScreen extends ClickAdapter implements Screen {
     @Override
     public void render(float delta) {
         camController.update();
-        firstPersonCameraController.update(delta);
+        //firstPersonCameraController.update(delta);
 
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -150,7 +150,8 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        Gdx.app.log(TAG, "mouseMoved ::" + screenX +"::"+ screenY);
+        //Gdx.app.log(TAG, "mouseMoved ::" + screenX +"::"+ screenY);
+        //return firstPersonCameraController.touchDragged(screenX, screenY, 0);
         return super.mouseMoved(screenX, screenY);
     }
 
@@ -168,7 +169,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-        //environment.add(new SpotLight().set(Color.RED, new Vector3(0, 0, -10), new Vector3(0, 0, 0), 100.0f, 50.0f, 50.0f));
+        //environment.add(new SpotLight().set(Color.RED, new Vector3(0, 0, 20), new Vector3(0, 0, 0), 100.0f, 50.0f, 50.0f));
         //environment.add(new PointLight().set(0.8f, 0.8f, 0.8f, 0f, 0f, 10f, 100f));
 
         modelBatch = new ModelBatch();
@@ -183,12 +184,12 @@ public class GameScreen extends ClickAdapter implements Screen {
         camController = new CameraInputController(cam);
         camController.pinchZoomFactor = 100f;
 
-        firstPersonCameraController = new FirstPersonCameraController(cam);
-        firstPersonCameraController.setDegreesPerPixel(0.1f);
-        firstPersonCameraController.setVelocity(10);
+        /*firstPersonCameraController = new FirstPersonCameraController(cam);
+        firstPersonCameraController.setDegreesPerPixel(0.5f);
+        firstPersonCameraController.setVelocity(10);*/
 
         //Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
-        Gdx.input.setInputProcessor(new InputMultiplexer(firstPersonCameraController));
+        Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
 
         // DRAWING DEBUG BALL
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -203,16 +204,19 @@ public class GameScreen extends ClickAdapter implements Screen {
     private void setupTiles () {
 
         int x=0, y=0;
-        int mrows = 9;
-        int mcols = 9;
+        int mrows = 4;
+        int mcols = 4;
 
         int tileW = 10;
-        int offset = 5;
+        int offset = 1;
 
-        for (x=0; x<mrows; x++) {
-            for (y=0; y<mcols; y++) {
-                float posX = tileW*x+offset*x;
-                float posY = tileW*y+offset*y;
+        float totalW = tileW * mcols + offset * mcols - offset;
+        float totalH = tileW * mrows + offset * mrows - offset;
+
+        for (x=0; x<mcols; x++) {
+            for (y=0; y<mrows; y++) {
+                float posX = (float) (tileW*x+offset*x - totalW*0.5);
+                float posY = (float) (tileW*y+offset*y - totalH*0.5);
                 float length = tileW;
                 float breadth = tileW;
                 float height = tileW;
@@ -223,7 +227,7 @@ public class GameScreen extends ClickAdapter implements Screen {
     }
 
     private void createTile (Vector3 p1, float length, float breadth, float height) {
-        TileActor stackActor = TileActor.Factory.createStack(p1, length, breadth, height);
+        TileActor stackActor = TileActor.create(p1, length, breadth, height);
         tiles.add(stackActor);
 
         //models.add(stackActor);
