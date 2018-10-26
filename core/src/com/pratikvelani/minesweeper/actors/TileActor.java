@@ -30,6 +30,13 @@ public class TileActor extends BaseActor {
 
     public Vector3 point;
 
+    public Vector3[] angleList = new Vector3[] {
+            new Vector3(0, 0, 0)
+    };
+
+    public Vector3 viewAngle = new Vector3();
+
+
     public TileActor(Model model) {
         //super(model, transform);
         super(model);

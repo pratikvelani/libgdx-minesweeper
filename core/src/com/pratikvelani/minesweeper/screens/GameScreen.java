@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.environment.SpotLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
@@ -55,6 +56,8 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     private int selected = -1, selecting = -1;
 
+    private DirectionalLight directionalLight;
+
 
     public GameScreen(GdxGame game) {
         super ();
@@ -93,6 +96,8 @@ public class GameScreen extends ClickAdapter implements Screen {
     public void render(float delta) {
         camController.update();
         firstPersonCameraController.update(delta);
+
+        directionalLight.setDirection(cam.direction);
 
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -145,18 +150,17 @@ public class GameScreen extends ClickAdapter implements Screen {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         selecting = getObject(screenX, screenY);
-        Gdx.app.log("S", "" + selecting);
-        if (selecting >= 0) {
+        /*if (selecting >= 0) {
             return true;
-        }
+        }*/
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchDragged (int screenX, int screenY, int pointer) {
-        if (selecting >= 0) {
+        /*if (selecting >= 0) {
             return true;
-        }
+        }*/
         return super.touchDragged(screenX, screenY, pointer);
     }
 
@@ -175,7 +179,7 @@ public class GameScreen extends ClickAdapter implements Screen {
                 Gdx.app.log("SELECT", "" + selecting);
             }
             selecting = -1;
-            return true;
+            //return true;
         }
         return super.touchUp(screenX, screenY, pointer, button);
     }
@@ -188,14 +192,17 @@ public class GameScreen extends ClickAdapter implements Screen {
     private void setupEnvironment () {
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
         //environment.add(new SpotLight().set(Color.RED, new Vector3(0, 0, 20), new Vector3(0, 0, 0), 100.0f, 50.0f, 50.0f));
-        //environment.add(new PointLight().set(0.8f, 0.8f, 0.8f, 0f, 0f, 10f, 100f));
+        //environment.add(new PointLight().set(1.0f, 0.0f, 0.0f, 0f, 0f, 0f, 1000f));
+
+        directionalLight = new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f);
+        environment.add(directionalLight);
 
         modelBatch = new ModelBatch();
 
         cam = new PerspectiveCamera(FOV, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0f, 0f, 50f);
+        //cam.position.set(0f, 0f, 50f);
+        cam.position.set(0f, 0f, 0f);
         cam.lookAt(0,0,0);
         cam.near = 1f;
         cam.far = 300f;
@@ -209,7 +216,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         firstPersonCameraController.setVelocity(10);
 
         //Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
-        Gdx.input.setInputProcessor(new InputMultiplexer(this));
+        Gdx.input.setInputProcessor(new InputMultiplexer(this, firstPersonCameraController));
 
         // DRAWING DEBUG BALL
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -233,7 +240,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         float totalW = tileW * mcols + offset * mcols - offset;
         float totalH = tileW * mrows + offset * mrows - offset;
 
-        for (x=0; x<mcols; x++) {
+        /*for (x=0; x<mcols; x++) {
             for (y=0; y<mrows; y++) {
                 float posX = (float) (tileW*x+offset*x - totalW*0.5);
                 float posY = (float) (tileW*y+offset*y - totalH*0.5);
@@ -241,16 +248,56 @@ public class GameScreen extends ClickAdapter implements Screen {
                 float breadth = tileW;
                 float height = tileW;
 
+
+
+                float px = rad*sin(xrot*(PI/180))*cos(yrot*(PI/180));
+                float py = rad*sin(xrot*(PI/180))*sin(yrot*(PI/180));
+                float pz = cos(xrot*(PI/180));
+
+
                 createTile(new Vector3(posX, posY, 0), length, breadth, height);
             }
+        }*/
+
+        float length = tileW;
+        float breadth = tileW;
+        float height = tileW;
+
+        int num = 10;
+        float angleOffset = 12f;
+        float startAngle = (float)Math.toRadians(180);
+        for (x=0; x<num; x++) {
+            /*float posX = (float) (tileW*x+offset*x - totalW*0.5);
+                float posY = (float) (tileW*y+offset*y - totalH*0.5);
+
+                float px = rad*sin(xrot*(PI/180))*cos(yrot*(PI/180));
+                float py = rad*sin(xrot*(PI/180))*sin(yrot*(PI/180));
+                float pz = cos(xrot*(PI/180));*/
+
+            //float radians = (float)Math.toRadians(12*x);
+            float radians = startAngle + (float)Math.toRadians(12*x);
+
+            float px = (float)(Math.cos(radians) * 50);
+            float py = (float)(Math.sin(radians) * 50);
+
+            TileActor actor = createTile(new Vector3(px, 0, py), length, breadth, height);
+            actor.viewAngle.x = 0;
+            actor.viewAngle.y = -12*x;
+            actor.viewAngle.z = 0;
+            actor.transform.rotate(Vector3.X, actor.viewAngle.x);
+            actor.transform.rotate(Vector3.Y, actor.viewAngle.y);
+            actor.transform.rotate(Vector3.Z, actor.viewAngle.z);
+            actor.calculateTransforms();
         }
     }
 
-    private void createTile (Vector3 p1, float length, float breadth, float height) {
-        TileActor stackActor = TileActor.create(p1, length, breadth, height);
-        tiles.add(stackActor);
+    private TileActor createTile (Vector3 p1, float length, float breadth, float height) {
+        TileActor actor = TileActor.create(p1, length, breadth, height);
+        tiles.add(actor);
 
         //models.add(stackActor);
+
+        return actor;
     }
 
 
@@ -264,12 +311,15 @@ public class GameScreen extends ClickAdapter implements Screen {
             instance.transform.getTranslation(position);
             position.add(((TileActor) instance).center);
             float dist2 = ray.origin.dst2(position);
-            Gdx.app.log(">>", "" + distance);
             if (distance >= 0f && dist2 > distance) continue;
-            if (Intersector.intersectRaySphere(ray, position, ((TileActor) instance).radius, null)) {
+            if (Intersector.intersectRayBounds(ray, ((TileActor) instance).bounds, null)) {
                 result = i;
                 distance = dist2;
             }
+            /*if (Intersector.intersectRaySphere(ray, position, ((TileActor) instance).radius, null)) {
+                result = i;
+                distance = dist2;
+            }*/
         }
         return result;
     }

@@ -26,7 +26,7 @@ public class BaseActor extends ModelInstance {
     public final Vector3 dimensions = new Vector3();
     public float radius;
 
-    private final static BoundingBox bounds = new BoundingBox();
+    public BoundingBox bounds = new BoundingBox();
 
     public BaseActor(Model model) {
         super(model);
@@ -65,6 +65,7 @@ public class BaseActor extends ModelInstance {
     public void updateBounds () {
         calculateTransforms();
         calculateBoundingBox(bounds);
+        bounds.mul(transform);
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
 
