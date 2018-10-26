@@ -3,19 +3,18 @@ package com.pratikvelani.minesweeper.toolbox;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g3d.Model;
 
 /**
- * Created by pratikvelani on 20/07/17.
+ * Created by pratikvelani
  */
 
 public class Assets {
     private static Assets instance = new Assets();
 
     static final public String TEXTURE_TILE = "tile.jpg";
-    static final public String[] TEXTURE_NUMBERS = new String[] {"numbers/0.jpg", "numbers/1.jpg", "numbers/2.jpg", "numbers/3.jpg",
-            "numbers/4.jpg", "numbers/5.jpg", "numbers/6.jpg", "numbers/7.jpg", "numbers/8.jpg", "numbers/9.jpg"};
 
-    static final public String TEXTURE_NUMBERS_ATLAS = "numbers/numbers.txt";
+    static final public String MODEL_CUBE = "cube/cube.obj";
 
     private AssetManager manager = new AssetManager();
 
@@ -30,18 +29,7 @@ public class Assets {
     public void load () {
         manager.load(TEXTURE_TILE, Texture.class);
 
-        manager.load(TEXTURE_NUMBERS[0], Texture.class);
-        manager.load(TEXTURE_NUMBERS[1], Texture.class);
-        manager.load(TEXTURE_NUMBERS[2], Texture.class);
-        manager.load(TEXTURE_NUMBERS[3], Texture.class);
-        manager.load(TEXTURE_NUMBERS[4], Texture.class);
-        manager.load(TEXTURE_NUMBERS[5], Texture.class);
-        manager.load(TEXTURE_NUMBERS[6], Texture.class);
-        manager.load(TEXTURE_NUMBERS[7], Texture.class);
-        manager.load(TEXTURE_NUMBERS[8], Texture.class);
-        manager.load(TEXTURE_NUMBERS[9], Texture.class);
-
-        manager.load(TEXTURE_NUMBERS_ATLAS, TextureAtlas.class);
+        manager.load(MODEL_CUBE, Model.class);
 
     }
 
@@ -60,5 +48,9 @@ public class Assets {
 
     public TextureAtlas getTextureAtlas (String name) {
         return manager.get(name, TextureAtlas.class);
+    }
+
+    public Model getModel (String asset) {
+        return manager.get(asset, Model.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.pratikvelani.minesweeper.actors;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -17,30 +18,59 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.pratikvelani.minesweeper.toolbox.Assets;
 
 /**
- * Created by pratikvelani on 04/07/17.
+ * Created by pratikvelani
  */
 
 public class BaseActor extends ModelInstance {
     public final Vector3 center = new Vector3();
     public final Vector3 dimensions = new Vector3();
-    public final float radius;
+    public float radius;
 
     private final static BoundingBox bounds = new BoundingBox();
 
-    public BaseActor(Model model, Matrix4 transform) {
-        super(model, transform);
-        /*calculateBoundingBox(bounds);
-        bounds.getCenter(center);
-        bounds.getDimensions(dimensions);
+    public BaseActor(Model model) {
+        super(model);
 
-        radius = dimensions.len() / 2f;*/
-        radius = 0;
-    }
-
-    public void updateBounds () {
         calculateBoundingBox(bounds);
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
+
+        //radius = dimensions.len();
+        radius = 50;
+
+        Gdx.app.log("ROT", "" + radius);
+    }
+
+    public BaseActor(Model model, Matrix4 transform) {
+        super(model, transform);
+        calculateBoundingBox(bounds);
+        bounds.getCenter(center);
+        bounds.getDimensions(dimensions);
+
+        radius = dimensions.len() / 2f;
+    }
+
+    public BaseActor(Model model, String nodeId, boolean mergeTransform) {
+        super(model, nodeId, mergeTransform);
+
+        calculateBoundingBox(bounds);
+        bounds.getCenter(center);
+        bounds.getDimensions(dimensions);
+
+        Gdx.app.log("ROT", "" + bounds);
+
+        radius = dimensions.len() / 2f;
+    }
+
+    public void updateBounds () {
+        calculateTransforms();
+        calculateBoundingBox(bounds);
+        bounds.getCenter(center);
+        bounds.getDimensions(dimensions);
+
+        radius = dimensions.len() / 2f;
+
+        //Gdx.app.log("ROT", "" + bounds);
     }
 
     public void act (float deltaTime) {

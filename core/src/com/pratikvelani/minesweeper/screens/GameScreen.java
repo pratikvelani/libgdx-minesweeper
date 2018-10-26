@@ -19,7 +19,9 @@ import com.badlogic.gdx.graphics.g3d.environment.SpotLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.pratikvelani.minesweeper.GdxGame;
 import com.pratikvelani.minesweeper.actors.BaseActor;
 import com.pratikvelani.minesweeper.actors.TileActor;
@@ -50,6 +52,8 @@ public class GameScreen extends ClickAdapter implements Screen {
     public ModelInstance ground;
 
     private ModelInstance debugBall;
+
+    private int selected = -1, selecting = -1;
 
 
     public GameScreen(GdxGame game) {
@@ -88,7 +92,7 @@ public class GameScreen extends ClickAdapter implements Screen {
     @Override
     public void render(float delta) {
         camController.update();
-        //firstPersonCameraController.update(delta);
+        firstPersonCameraController.update(delta);
 
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -140,11 +144,19 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        selecting = getObject(screenX, screenY);
+        Gdx.app.log("S", "" + selecting);
+        if (selecting >= 0) {
+            return true;
+        }
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchDragged (int screenX, int screenY, int pointer) {
+        if (selecting >= 0) {
+            return true;
+        }
         return super.touchDragged(screenX, screenY, pointer);
     }
 
@@ -157,6 +169,14 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     @Override
     public boolean touchUp (int screenX, int screenY, int pointer, int button) {
+        if (selecting >= 0) {
+            if (selecting == getObject(screenX, screenY)){
+                //setSelected(selecting);
+                Gdx.app.log("SELECT", "" + selecting);
+            }
+            selecting = -1;
+            return true;
+        }
         return super.touchUp(screenX, screenY, pointer, button);
     }
 
@@ -184,12 +204,12 @@ public class GameScreen extends ClickAdapter implements Screen {
         camController = new CameraInputController(cam);
         camController.pinchZoomFactor = 100f;
 
-        /*firstPersonCameraController = new FirstPersonCameraController(cam);
+        firstPersonCameraController = new FirstPersonCameraController(cam);
         firstPersonCameraController.setDegreesPerPixel(0.5f);
-        firstPersonCameraController.setVelocity(10);*/
+        firstPersonCameraController.setVelocity(10);
 
         //Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
-        Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
+        Gdx.input.setInputProcessor(new InputMultiplexer(this));
 
         // DRAWING DEBUG BALL
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -232,4 +252,42 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         //models.add(stackActor);
     }
+
+
+    public int getObject (int screenX, int screenY) {
+        Ray ray = cam.getPickRay(screenX, screenY);
+        int result = -1;
+        float distance = -1;
+        Vector3 position = new Vector3();
+        for (int i = 0; i < tiles.size(); ++i) {
+            final ModelInstance instance = tiles.get(i);
+            instance.transform.getTranslation(position);
+            position.add(((TileActor) instance).center);
+            float dist2 = ray.origin.dst2(position);
+            Gdx.app.log(">>", "" + distance);
+            if (distance >= 0f && dist2 > distance) continue;
+            if (Intersector.intersectRaySphere(ray, position, ((TileActor) instance).radius, null)) {
+                result = i;
+                distance = dist2;
+            }
+        }
+        return result;
+    }
+
+    /*public void setSelected (int value) {
+        if (selected == value) return;
+        if (selected >= 0) {
+            Material mat = instances.get(selected).materials.get(0);
+            mat.clear();
+            mat.set(originalMaterial);
+        }
+        selected = value;
+        if (selected >= 0) {
+            Material mat = instances.get(selected).materials.get(0);
+            originalMaterial.clear();
+            originalMaterial.set(mat);
+            mat.clear();
+            mat.set(selectionMaterial);
+        }
+    }*/
 }
