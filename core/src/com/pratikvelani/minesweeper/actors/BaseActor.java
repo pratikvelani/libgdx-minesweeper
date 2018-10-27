@@ -38,7 +38,7 @@ public class BaseActor extends ModelInstance {
         //radius = dimensions.len();
         radius = 50;
 
-        Gdx.app.log("ROT", "" + radius);
+        //Gdx.app.log("ROT", "" + radius);
     }
 
     public BaseActor(Model model, Matrix4 transform) {
@@ -57,7 +57,7 @@ public class BaseActor extends ModelInstance {
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
 
-        Gdx.app.log("ROT", "" + bounds);
+        //Gdx.app.log("ROT", "" + bounds);
 
         radius = dimensions.len() / 2f;
     }
