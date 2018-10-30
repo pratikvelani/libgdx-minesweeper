@@ -28,13 +28,21 @@ public class TileActor extends BaseActor {
     public Vector3 point1;
     public Vector3 point2;
 
-    public Vector3 point;
+    public Vector3 point = new Vector3();
+    public Matrix4 mat;
 
-    public Vector3[] angleList = new Vector3[] {
-            new Vector3(0, 0, 0)
+    public Vector3[] faceAngleList = new Vector3[] {
+            new Vector3(0, 0, 0),
+            new Vector3(90, 0, -90),
+            new Vector3(90, 180, 0),
+            new Vector3(90, 90, 0),
+            new Vector3(90, 0, 90),
+            new Vector3(90, -90, 0)
     };
 
     public Vector3 viewAngle = new Vector3();
+
+    public int face = 0;
 
 
     public TileActor(Model model) {
@@ -112,8 +120,32 @@ public class TileActor extends BaseActor {
         return actor;
     }
 
+    static public TileActor create (Matrix4 mat) {
+        Model model = Assets.getInstance ().getModel(Assets.MODEL_CUBE);
+
+        TileActor actor = new TileActor(model);
+        actor.mat = mat.cpy();
+        actor.transform.set(mat);
+
+        mat.getTranslation(actor.point);
+
+        actor.calculateTransforms();
+        actor.updateBounds();
+        return actor;
+    }
+
     /*@Override
     public void act(float deltaTime) {
         super.act(deltaTime);
     }*/
+
+    public void showFace (int face) {
+        if (face < faceAngleList.length-1) {
+            this.face = face;
+            transform.set(mat);
+            transform.rotate(Vector3.X, faceAngleList[face].x);
+            transform.rotate(Vector3.Y, faceAngleList[face].y);
+            transform.rotate(Vector3.Z, faceAngleList[face].z);
+        }
+    }
 }

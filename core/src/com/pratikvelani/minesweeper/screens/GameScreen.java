@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.pratikvelani.minesweeper.GdxGame;
 import com.pratikvelani.minesweeper.actors.TileActor;
 import com.pratikvelani.minesweeper.g3d.ClickAdapter;
+import com.pratikvelani.minesweeper.g3d.EnvironmentCubemap;
 import com.pratikvelani.minesweeper.toolbox.Assets;
 
 import java.util.ArrayList;
@@ -63,6 +65,8 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     private DirectionalLight directionalLight;
 
+    EnvironmentCubemap envCubemap;
+
 
     public GameScreen(GdxGame game) {
         super ();
@@ -71,8 +75,8 @@ public class GameScreen extends ClickAdapter implements Screen {
         STAGE_WIDTH = Gdx.graphics.getWidth();
         STAGE_HEIGHT = Gdx.graphics.getHeight();
 
-        //Gdx.input.setCursorCatched(true);
-        //Gdx.input.setCursorPosition(STAGE_WIDTH/2, STAGE_HEIGHT/2);
+        Gdx.input.setCursorCatched(true);
+        Gdx.input.setCursorPosition(STAGE_WIDTH/2, STAGE_HEIGHT/2);
 
         Gdx.app.log("STG", STAGE_WIDTH + ":" + STAGE_HEIGHT);
 
@@ -126,6 +130,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         Gdx.gl.glClearColor(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
+        envCubemap.render(cam);
 
         modelBatch.begin(cam);
         //modelBatch.render(ground, environment);
@@ -215,6 +220,9 @@ public class GameScreen extends ClickAdapter implements Screen {
             if (selecting == getObject(STAGE_WIDTH/2, STAGE_HEIGHT/2)){
                 //setSelected(selecting);
                 Gdx.app.log("SELECT", "" + selecting);
+
+                TileActor actor = tiles.get(selecting);
+                actor.showFace(actor.face+1);
             }
             selecting = -1;
             //return true;
@@ -261,9 +269,11 @@ public class GameScreen extends ClickAdapter implements Screen {
         Gdx.input.setInputProcessor(multiplexer);
 
         Texture texture = Assets.getInstance().getTexture(Assets.TEXTURE_CROSSHAIR);
-        Image image1 = new Image(texture);
-        image1.setPosition(STAGE_WIDTH/2-image1.getWidth()/2,STAGE_HEIGHT/2-image1.getHeight()/2);
-        stage2d.addActor(image1);
+        Image crosshair = new Image(texture);
+        crosshair.setHeight(25);
+        crosshair.setWidth(25);
+        crosshair.setPosition(STAGE_WIDTH/2-crosshair.getWidth()/2,STAGE_HEIGHT/2-crosshair.getHeight()/2);
+        stage2d.addActor(crosshair);
 
         TextButton button = new TextButton("Exit", Assets.getInstance().getUISkin());
         button.addListener(new ClickListener() {
@@ -284,17 +294,21 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         debugBall = new ModelInstance(model);
         debugBall.calculateTransforms();*/
-        
+
+        envCubemap = new EnvironmentCubemap(Gdx.files.internal("skybox/pos-x.tga"), Gdx.files.internal("skybox/neg-x.tga"),
+                Gdx.files.internal("skybox/pos-y.tga"), Gdx.files.internal("skybox/neg-y.tga"),
+                Gdx.files.internal("skybox/pos-z.tga"), Gdx.files.internal("skybox/neg-z.tga"));
     }
 
     private void setupTiles () {
 
         int x=0, y=0;
-        int mrows = 4;
-        int mcols = 4;
+        int mrows = 20;
+        int mcols = 40;
 
         int tileW = 10;
         int offset = 1;
+        int yoffset = -100;
 
         float totalW = tileW * mcols + offset * mcols - offset;
         float totalH = tileW * mrows + offset * mrows - offset;
@@ -323,7 +337,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         float height = tileW;
 
         int num = 12;
-        float angleOffset = 12f;
+        float angleOffset = 5f;
         float startAngle = 240f;
         for (x=0; x<mcols; x++) {
             for (y=0; y<mrows; y++) {
@@ -342,27 +356,28 @@ public class GameScreen extends ClickAdapter implements Screen {
                 float phi = 0;
                 float theta = 0;
 
-                phi = (float) Math.toRadians(12*y);
-                theta = (float) Math.toRadians(startAngle + 12*x);
+                phi = (float) Math.toRadians(angleOffset*y);
+                theta = (float) Math.toRadians(startAngle + angleOffset*x);
 
                 /*px = (float) (50 * Math.cos(phi) * Math.sin(theta));
                 py = (float) (50 * Math.sin(phi) * Math.sin(theta));
                 pz = (float) (50 * Math.cos(theta));*/
 
-                px = (float)(Math.cos(theta) * 50);
-                py = 10 * y;
-                pz = (float)(Math.sin(theta) * 50);
+                px = (float)(Math.cos(theta) * 100);
+                py = yoffset + 9 * y;
+                pz = (float)(Math.sin(theta) * 100);
 
                 //Gdx.app.log("POS", px + ":" + py + ":" + pz);
 
-                TileActor actor = createTile(new Vector3(px, py, pz), length, breadth, height);
-                actor.viewAngle.x = 0;
-                actor.viewAngle.y = (float)-Math.toDegrees(theta);
-                actor.viewAngle.z = 0;
-                actor.transform.rotate(Vector3.X, actor.viewAngle.x);
-                actor.transform.rotate(Vector3.Y, actor.viewAngle.y);
-                actor.transform.rotate(Vector3.Z, actor.viewAngle.z);
-                actor.calculateTransforms();
+                Matrix4 mat = new Matrix4();
+                mat.translate(px, py, pz);
+                mat.rotate(Vector3.X, 0);
+                mat.rotate(Vector3.Y, (float)-Math.toDegrees(theta));
+                mat.rotate(Vector3.Z, 0);
+                mat.scale(4, 4, 4);
+
+                TileActor actor = TileActor.create(mat);
+                tiles.add(actor);
             }
         }
     }

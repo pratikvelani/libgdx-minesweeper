@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
+import java.util.HashMap;
+
 /**
  * Created by pratikvelani
  */
@@ -20,8 +22,8 @@ public class Assets {
     static final public String MODEL_CUBE = "cube/cube.obj";
 
     private AssetManager manager = new AssetManager();
-
     private Skin uiSkin;
+    private HashMap<String, Model> modelCache = new HashMap<String, Model>();
 
     public static Assets getInstance() {
         return instance;
@@ -61,7 +63,13 @@ public class Assets {
     }
 
     public Model getModel (String asset) {
-        return manager.get(asset, Model.class);
+        if (modelCache.containsKey(asset)) {
+            return modelCache.get(asset);
+        }
+
+        Model model = manager.get(asset, Model.class);
+        modelCache.put(asset, model);
+        return model;
     }
 
     public Skin getUISkin () {
