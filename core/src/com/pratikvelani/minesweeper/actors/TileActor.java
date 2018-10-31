@@ -1,19 +1,13 @@
 package com.pratikvelani.minesweeper.actors;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
@@ -43,7 +37,9 @@ public class TileActor extends BaseActor {
     public Vector3 viewAngle = new Vector3();
 
     public int face = 0;
-
+    public GridPoint2 index = new GridPoint2();
+    public int neighborCount = 0;
+    public Boolean opened = false;
 
     public TileActor(Model model) {
         //super(model, transform);
@@ -108,6 +104,8 @@ public class TileActor extends BaseActor {
         actor.transform.rotate(Vector3.Y, 0);
         actor.transform.rotate(Vector3.Z, 0);
 
+        //actor.materials.get(0).set(ColorAttribute.createAmbient(1.0f, 0f, 0f, 1.0f));
+
         Quaternion quaternion = new Quaternion();
         mat.getRotation(quaternion);
 
@@ -127,6 +125,9 @@ public class TileActor extends BaseActor {
         actor.mat = mat.cpy();
         actor.transform.set(mat);
 
+        //actor.model.nodes.get(0).parts.get(0).material.set(ColorAttribute.createDiffuse(Color.RED));
+        //Gdx.app.log("TA", actor.model.nodes.get(0).parts.get(0).material.get(TextureAttribute.Diffuse).toString());
+
         mat.getTranslation(actor.point);
 
         actor.calculateTransforms();
@@ -140,12 +141,18 @@ public class TileActor extends BaseActor {
     }*/
 
     public void showFace (int face) {
-        if (face < faceAngleList.length-1) {
+        if (face < faceAngleList.length && opened == false) {
             this.face = face;
             transform.set(mat);
             transform.rotate(Vector3.X, faceAngleList[face].x);
             transform.rotate(Vector3.Y, faceAngleList[face].y);
             transform.rotate(Vector3.Z, faceAngleList[face].z);
+            calculateTransforms();
+            opened = true;
         }
+    }
+
+    public Boolean isBomb() {
+        return face == 5;
     }
 }

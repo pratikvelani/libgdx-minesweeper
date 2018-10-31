@@ -22,8 +22,8 @@ public class GdxGame extends Game {
 
 	@Override
 	public void create () {
-		Gdx.graphics.setContinuousRendering(false);
-		Gdx.graphics.requestRendering();
+		/*Gdx.graphics.setContinuousRendering(false);
+		Gdx.graphics.requestRendering();*/
 
 		Assets.createInstance ();
 		Assets.getInstance().loadSync();

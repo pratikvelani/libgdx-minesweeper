@@ -31,7 +31,7 @@ import com.pratikvelani.minesweeper.g3d.EnvironmentCubemap;
 import com.pratikvelani.minesweeper.toolbox.Assets;
 
 import java.util.ArrayList;
-
+import java.util.Arrays;
 
 public class GameScreen extends ClickAdapter implements Screen {
     private static final float FOV = 67F;
@@ -55,13 +55,21 @@ public class GameScreen extends ClickAdapter implements Screen {
     private FirstPersonCameraController firstPersonCameraController;
 
     //private ArrayList<BaseActor> models = new ArrayList<BaseActor>();
-    private ArrayList<TileActor> tiles = new ArrayList<TileActor>();
+    private ArrayList<TileActor> tilesModels = new ArrayList<TileActor>();
+    private float bombFactor = 0.1f;
+
+    private int cols = 10;
+    private int rows = 5;
+    private int[][] tileMap = new int[cols][rows];
+    private int[][] bombMap = new int[cols][rows];
+    private TileActor[][] tiles = new TileActor[cols][rows];
 
     public ModelInstance ground;
 
     private ModelInstance debugBall;
 
     private int selected = -1, selecting = -1;
+    private TileActor selectedTile;
 
     private DirectionalLight directionalLight;
 
@@ -119,6 +127,14 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         directionalLight.setDirection(cam.direction);
 
+        /*if (selected > 0) {
+            selectedTile = tilesModels.get(selected);
+            tiles[selectedTile.index.y-1][selectedTile.index.x-1].transform.rotate(Vector3.Y, 5);
+            tiles[selectedTile.index.y+1][selectedTile.index.x-1].transform.rotate(Vector3.Y, 5);
+            tiles[selectedTile.index.y+1][selectedTile.index.x+1].transform.rotate(Vector3.Y, 5);
+            tiles[selectedTile.index.y-1][selectedTile.index.x+1].transform.rotate(Vector3.Y, 5);
+        }*/
+
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
@@ -135,7 +151,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         modelBatch.begin(cam);
         //modelBatch.render(ground, environment);
 
-        for (TileActor actor: tiles) {
+        for (TileActor actor: tilesModels) {
             //actor.transform.setFromEulerAngles(0, 0, 1);
             modelBatch.render(actor, environment);
         }
@@ -182,7 +198,6 @@ public class GameScreen extends ClickAdapter implements Screen {
     public boolean keyTyped(char character) {
         Gdx.app.log("Key", "" + character);
         if (character == 'x') {
-
             Gdx.app.exit();
         }
         return super.keyTyped(character);
@@ -199,7 +214,7 @@ public class GameScreen extends ClickAdapter implements Screen {
     }
 
     @Override
-    public boolean touchDragged (int screenX, int screenY, int pointer) {
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
         /*if (selecting >= 0) {
             return true;
         }*/
@@ -214,15 +229,13 @@ public class GameScreen extends ClickAdapter implements Screen {
     }
 
     @Override
-    public boolean touchUp (int screenX, int screenY, int pointer, int button) {
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (selecting >= 0) {
             //if (selecting == getObject(screenX, screenY)){
             if (selecting == getObject(STAGE_WIDTH/2, STAGE_HEIGHT/2)){
                 //setSelected(selecting);
                 Gdx.app.log("SELECT", "" + selecting);
-
-                TileActor actor = tiles.get(selecting);
-                actor.showFace(actor.face+1);
+                setSelected (selecting);
             }
             selecting = -1;
             //return true;
@@ -285,7 +298,6 @@ public class GameScreen extends ClickAdapter implements Screen {
         });
         stage2d.addActor(button);
 
-
         // DRAWING BALL
         /*ModelBuilder modelBuilder = new ModelBuilder();
         Model model = modelBuilder.createSphere(2, 2, 2, 10, 10,
@@ -303,44 +315,24 @@ public class GameScreen extends ClickAdapter implements Screen {
     private void setupTiles () {
 
         int x=0, y=0;
-        int mrows = 20;
-        int mcols = 40;
 
-        int tileW = 10;
-        int offset = 1;
-        int yoffset = -100;
+        int offsetY = 9;
 
-        float totalW = tileW * mcols + offset * mcols - offset;
-        float totalH = tileW * mrows + offset * mrows - offset;
-
-        /*for (x=0; x<mcols; x++) {
-            for (y=0; y<mrows; y++) {
-                float posX = (float) (tileW*x+offset*x - totalW*0.5);
-                float posY = (float) (tileW*y+offset*y - totalH*0.5);
-                float length = tileW;
-                float breadth = tileW;
-                float height = tileW;
-
-
-
-                float px = rad*sin(xrot*(PI/180))*cos(yrot*(PI/180));
-                float py = rad*sin(xrot*(PI/180))*sin(yrot*(PI/180));
-                float pz = cos(xrot*(PI/180));
-
-
-                createTile(new Vector3(posX, posY, 0), length, breadth, height);
-            }
-        }*/
-
-        float length = tileW;
-        float breadth = tileW;
-        float height = tileW;
-
-        int num = 12;
         float angleOffset = 5f;
         float startAngle = 240f;
-        for (x=0; x<mcols; x++) {
-            for (y=0; y<mrows; y++) {
+        float startY = -cols*5;
+        float radii = 100;
+
+        for (y=0; y<rows; y++) {
+            for (x = 0; x < cols; x++) {
+                bombMap[x][y] = (Math.random() < bombFactor) ? 1 : 0;
+            }
+        }
+
+        for (x=0; x<cols; x++) {
+            for (y=0; y<rows; y++) {
+                tileMap[x][y] = 0;
+
                 /*float posX = (float) (tileW*x+offset*x - totalW*0.5);
                 float posY = (float) (tileW*y+offset*y - totalH*0.5);
 
@@ -363,9 +355,9 @@ public class GameScreen extends ClickAdapter implements Screen {
                 py = (float) (50 * Math.sin(phi) * Math.sin(theta));
                 pz = (float) (50 * Math.cos(theta));*/
 
-                px = (float)(Math.cos(theta) * 100);
-                py = yoffset + 9 * y;
-                pz = (float)(Math.sin(theta) * 100);
+                px = (float)(Math.cos(theta) * radii);
+                py = startY + offsetY * y;
+                pz = (float)(Math.sin(theta) * radii);
 
                 //Gdx.app.log("POS", px + ":" + py + ":" + pz);
 
@@ -377,28 +369,66 @@ public class GameScreen extends ClickAdapter implements Screen {
                 mat.scale(4, 4, 4);
 
                 TileActor actor = TileActor.create(mat);
-                tiles.add(actor);
+                actor.index.x = x;
+                actor.index.y = y;
+                actor.neighborCount = getNeighbourCount(x, y);
+                actor.face = (bombMap[x][y] == 1)? 5 : actor.neighborCount;
+                tilesModels.add(actor);
+                tiles[x][y] = actor;
+                //actor.showFace(actor.face);
             }
         }
     }
 
-    private TileActor createTile (Vector3 p1, float length, float breadth, float height) {
-        TileActor actor = TileActor.create(p1, length, breadth, height);
-        tiles.add(actor);
+    private int getNeighbourCount (int x, int y) {
+        int count = 0;
+        for (int i=-1; i<=1; i++) {
+            int nx = x+i;
+            if (nx<0 || nx>=cols) continue;
+            for (int j=-1; j<=1; j++) {
+                //if (i == 0 && j == 0) continue;
 
-        //models.add(stackActor);
+                int ny = y+j;
+                if (ny<0 || ny>=rows) continue;
 
-        return actor;
+                if (bombMap[nx][ny] == 1) {
+                    count ++;
+                }
+            }
+        }
+
+        return count;
     }
 
+
+
+    public void floodFill (int x, int y) {
+        int count = 0;
+        for (int i=-1; i<=1; i++) {
+            int nx = x + i;
+            if (nx < 0 || nx >= cols) continue;
+            for (int j = -1; j <= 1; j++) {
+                //if (i == 0 && j == 0) continue;
+
+                int ny = y + j;
+                if (ny < 0 || ny >= rows) continue;
+
+                TileActor actor = tiles[nx][ny];
+
+                if (actor.opened == false) {
+                    open(nx, ny);
+                }
+            }
+        }
+    }
 
     public int getObject (int screenX, int screenY) {
         Ray ray = cam.getPickRay(screenX, screenY);
         int result = -1;
         float distance = -1;
         Vector3 position = new Vector3();
-        for (int i = 0; i < tiles.size(); ++i) {
-            final ModelInstance instance = tiles.get(i);
+        for (int i = 0; i < tilesModels.size(); ++i) {
+            final ModelInstance instance = tilesModels.get(i);
             instance.transform.getTranslation(position);
             position.add(((TileActor) instance).center);
             float dist2 = ray.origin.dst2(position);
@@ -415,20 +445,34 @@ public class GameScreen extends ClickAdapter implements Screen {
         return result;
     }
 
-    /*public void setSelected (int value) {
+    public void setSelected (int value) {
         if (selected == value) return;
         if (selected >= 0) {
-            Material mat = instances.get(selected).materials.get(0);
+            // OLD SELECTION
+            /*Material mat = instances.get(selected).materials.get(0);
             mat.clear();
-            mat.set(originalMaterial);
+            mat.set(originalMaterial);*/
         }
         selected = value;
         if (selected >= 0) {
-            Material mat = instances.get(selected).materials.get(0);
+            /*Material mat = instances.get(selected).materials.get(0);
             originalMaterial.clear();
             originalMaterial.set(mat);
             mat.clear();
-            mat.set(selectionMaterial);
+            mat.set(selectionMaterial);*/
+            // NEW SELECTION
+
+            TileActor actor = tilesModels.get(selecting);
+            open (actor.index.x, actor.index.y);
         }
-    }*/
+    }
+
+    public void open (int x, int y) {
+        TileActor actor = tiles[x][y];
+        actor.showFace(actor.face);
+
+        if (actor.face == 0) {
+            floodFill(actor.index.x, actor.index.y);
+        }
+    }
 }
