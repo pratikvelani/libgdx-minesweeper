@@ -13,8 +13,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -28,10 +26,11 @@ import com.pratikvelani.minesweeper.GdxGame;
 import com.pratikvelani.minesweeper.actors.TileActor;
 import com.pratikvelani.minesweeper.g3d.ClickAdapter;
 import com.pratikvelani.minesweeper.g3d.EnvironmentCubemap;
+//import com.pratikvelani.minesweeper.g3d.FirstPersonCameraController;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.pratikvelani.minesweeper.toolbox.Assets;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GameScreen extends ClickAdapter implements Screen {
     private static final float FOV = 67F;
@@ -51,17 +50,16 @@ public class GameScreen extends ClickAdapter implements Screen {
     private ModelBatch modelBatch;
     private PerspectiveCamera cam;
 
-    private CameraInputController camController;
     private FirstPersonCameraController firstPersonCameraController;
 
     //private ArrayList<BaseActor> models = new ArrayList<BaseActor>();
     private ArrayList<TileActor> tilesModels = new ArrayList<TileActor>();
     private float bombFactor = 0.1f;
 
-    private int cols = 10;
+    private int cols = 11;
     private int rows = 5;
     private int[][] tileMap = new int[cols][rows];
-    private int[][] bombMap = new int[cols][rows];
+    private int[][] map = new int[cols][rows];
     private TileActor[][] tiles = new TileActor[cols][rows];
 
     public ModelInstance ground;
@@ -98,42 +96,15 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     @Override
     public void show() {
-        /*if(Gdx.app.getType() == Application.ApplicationType.iOS) {
-            //Do awesome stuff for iOS here
-        }*/
-        /*ModelBuilder modelBuilder = new ModelBuilder();
-
-        Texture texture = new Texture("floorTile.png");
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        Material material = new Material(TextureAttribute.createDiffuse(texture)*//*, ColorAttribute.createSpecular(1, 1, 1, 1), FloatAttribute.createShininess(16f)*//*);
-        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates| VertexAttributes.Usage.Generic;
-
-        model = modelBuilder.createBox(distX / Constants.THREED_SCALE + Constants.FLOOR_OFFSET, 1, distY / Constants.THREED_SCALE + Constants.FLOOR_OFFSET,
-                material, attributes);
-        model.manageDisposable(texture);
-
-        ground = new ModelInstance(model, new Matrix4().setToTranslation((centerX / Constants.THREED_SCALE)/2, 0, (centerY / Constants.THREED_SCALE)/2));
-
-        //floorInstance.transform.setTranslation(distX / Constants.THREED_SCALE, 0, distY / Constants.THREED_SCALE);
-        ground.calculateTransforms();*/
 
         setupTiles ();
     }
 
     @Override
     public void render(float delta) {
-        camController.update();
         firstPersonCameraController.update(delta);
 
         directionalLight.setDirection(cam.direction);
-
-        /*if (selected > 0) {
-            selectedTile = tilesModels.get(selected);
-            tiles[selectedTile.index.y-1][selectedTile.index.x-1].transform.rotate(Vector3.Y, 5);
-            tiles[selectedTile.index.y+1][selectedTile.index.x-1].transform.rotate(Vector3.Y, 5);
-            tiles[selectedTile.index.y+1][selectedTile.index.x+1].transform.rotate(Vector3.Y, 5);
-            tiles[selectedTile.index.y-1][selectedTile.index.x+1].transform.rotate(Vector3.Y, 5);
-        }*/
 
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -155,8 +126,6 @@ public class GameScreen extends ClickAdapter implements Screen {
             //actor.transform.setFromEulerAngles(0, 0, 1);
             modelBatch.render(actor, environment);
         }
-
-        /*modelBatch.render(debugBall, environment);*/
 
         modelBatch.end();
 
@@ -269,8 +238,6 @@ public class GameScreen extends ClickAdapter implements Screen {
         cam.far = 300f;
         cam.update();
 
-        camController = new CameraInputController(cam);
-        camController.pinchZoomFactor = 100f;
 
         firstPersonCameraController = new FirstPersonCameraController(cam);
         firstPersonCameraController.setDegreesPerPixel(0.5f);
@@ -298,18 +265,9 @@ public class GameScreen extends ClickAdapter implements Screen {
         });
         stage2d.addActor(button);
 
-        // DRAWING BALL
-        /*ModelBuilder modelBuilder = new ModelBuilder();
-        Model model = modelBuilder.createSphere(2, 2, 2, 10, 10,
-                new Material(ColorAttribute.createDiffuse(com.badlogic.gdx.graphics.Color.RED)),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-
-        debugBall = new ModelInstance(model);
-        debugBall.calculateTransforms();*/
-
-        envCubemap = new EnvironmentCubemap(Gdx.files.internal("skybox/pos-x.tga"), Gdx.files.internal("skybox/neg-x.tga"),
-                Gdx.files.internal("skybox/pos-y.tga"), Gdx.files.internal("skybox/neg-y.tga"),
-                Gdx.files.internal("skybox/pos-z.tga"), Gdx.files.internal("skybox/neg-z.tga"));
+        envCubemap = new EnvironmentCubemap(Gdx.files.internal("cubemap/px.tga"), Gdx.files.internal("cubemap/nx.tga"),
+                Gdx.files.internal("cubemap/py.tga"), Gdx.files.internal("cubemap/ny.tga"),
+                Gdx.files.internal("cubemap/pz.tga"), Gdx.files.internal("cubemap/nz.tga"));
     }
 
     private void setupTiles () {
@@ -319,15 +277,24 @@ public class GameScreen extends ClickAdapter implements Screen {
         int offsetY = 9;
 
         float angleOffset = 5f;
-        float startAngle = 240f;
+        float startAngle = 245f;
         float startY = -cols*5;
         float radii = 100;
 
         for (y=0; y<rows; y++) {
             for (x = 0; x < cols; x++) {
-                bombMap[x][y] = (Math.random() < bombFactor) ? 1 : 0;
+                map[x][y] = (Math.random() < bombFactor) ? 5 : 0;
             }
         }
+
+        for (x=0; x<cols; x++) {
+            for (y = 0; y < rows; y++) {
+                if (map[x][y] != 5) {
+                    map[x][y] = getNeighbourCount(x, y);
+                }
+            }
+        }
+
 
         for (x=0; x<cols; x++) {
             for (y=0; y<rows; y++) {
@@ -368,16 +335,22 @@ public class GameScreen extends ClickAdapter implements Screen {
                 mat.rotate(Vector3.Z, 0);
                 mat.scale(4, 4, 4);
 
-                TileActor actor = TileActor.create(mat);
+                TileActor actor = TileActor.create(mat, map[x][y]);
                 actor.index.x = x;
                 actor.index.y = y;
                 actor.neighborCount = getNeighbourCount(x, y);
-                actor.face = (bombMap[x][y] == 1)? 5 : actor.neighborCount;
+                //actor.face = (map[x][y] == 1)? 5 : actor.neighborCount;
+                actor.type = map[x][y];
                 tilesModels.add(actor);
                 tiles[x][y] = actor;
-                //actor.showFace(actor.face);
             }
         }
+
+        int centerX = (int) Math.floor(tiles.length/2);
+        int centerY = (int) Math.floor(tiles[centerX].length/2);
+        TileActor centerTile = tiles[centerX][centerY];
+
+        cam.position.set (centerTile.point.x, centerTile.point.y, -50);
     }
 
     private int getNeighbourCount (int x, int y) {
@@ -391,7 +364,7 @@ public class GameScreen extends ClickAdapter implements Screen {
                 int ny = y+j;
                 if (ny<0 || ny>=rows) continue;
 
-                if (bombMap[nx][ny] == 1) {
+                if (map[nx][ny] == 5) {
                     count ++;
                 }
             }
@@ -469,9 +442,9 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     public void open (int x, int y) {
         TileActor actor = tiles[x][y];
-        actor.showFace(actor.face);
+        actor.open ();
 
-        if (actor.face == 0) {
+        if (actor.type == 0) {
             floodFill(actor.index.x, actor.index.y);
         }
     }

@@ -20,6 +20,15 @@ public class Assets {
     static final public String TEXTURE_CROSSHAIR = "crosshair.png";
 
     static final public String MODEL_CUBE = "cube/cube.obj";
+    static final public String[] MODEL_CUBES = new String[] {
+            "cube/0/cube.obj", "cube/1/cube.obj", "cube/2/cube.obj", "cube/3/cube.obj", "cube/4/cube.obj", "cube/5/cube.obj"
+    };
+    /*static final public String MODEL_CUBE_0 = "cube/0/cube.obj";
+    static final public String MODEL_CUBE_1 = "cube/1/cube.obj";
+    static final public String MODEL_CUBE_2 = "cube/2/cube.obj";
+    static final public String MODEL_CUBE_3 = "cube/3/cube.obj";
+    static final public String MODEL_CUBE_4 = "cube/4/cube.obj";
+    static final public String MODEL_CUBE_5 = "cube/5/cube.obj";*/
 
     private AssetManager manager = new AssetManager();
     private Skin uiSkin;
@@ -38,7 +47,18 @@ public class Assets {
         manager.load(TEXTURE_CROSSHAIR, Texture.class);
 
         manager.load(MODEL_CUBE, Model.class);
-
+        /*manager.load(MODEL_CUBE_0, Model.class);
+        manager.load(MODEL_CUBE_1, Model.class);
+        manager.load(MODEL_CUBE_2, Model.class);
+        manager.load(MODEL_CUBE_3, Model.class);
+        manager.load(MODEL_CUBE_4, Model.class);
+        manager.load(MODEL_CUBE_5, Model.class);*/
+        manager.load(MODEL_CUBES[0], Model.class);
+        manager.load(MODEL_CUBES[1], Model.class);
+        manager.load(MODEL_CUBES[2], Model.class);
+        manager.load(MODEL_CUBES[3], Model.class);
+        manager.load(MODEL_CUBES[4], Model.class);
+        manager.load(MODEL_CUBES[5], Model.class);
     }
 
     public void loadSync () {

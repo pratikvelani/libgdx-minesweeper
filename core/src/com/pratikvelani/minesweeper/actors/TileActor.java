@@ -19,9 +19,6 @@ import com.pratikvelani.minesweeper.toolbox.Assets;
 
 public class TileActor extends BaseActor {
 
-    public Vector3 point1;
-    public Vector3 point2;
-
     public Vector3 point = new Vector3();
     public Matrix4 mat;
 
@@ -37,6 +34,7 @@ public class TileActor extends BaseActor {
     public Vector3 viewAngle = new Vector3();
 
     public int face = 0;
+    public int type = 0;
     public GridPoint2 index = new GridPoint2();
     public int neighborCount = 0;
     public Boolean opened = false;
@@ -118,10 +116,11 @@ public class TileActor extends BaseActor {
         return actor;
     }
 
-    static public TileActor create (Matrix4 mat) {
-        Model model = Assets.getInstance ().getModel(Assets.MODEL_CUBE);
+    static public TileActor create (Matrix4 mat, int type) {
+        Model model = Assets.getInstance ().getModel(Assets.MODEL_CUBES[type]);
 
         TileActor actor = new TileActor(model);
+        actor.type = type;
         actor.mat = mat.cpy();
         actor.transform.set(mat);
 
@@ -148,8 +147,12 @@ public class TileActor extends BaseActor {
             transform.rotate(Vector3.Y, faceAngleList[face].y);
             transform.rotate(Vector3.Z, faceAngleList[face].z);
             calculateTransforms();
-            opened = true;
         }
+    }
+
+    public void open () {
+        showFace(2);
+        opened = true;
     }
 
     public Boolean isBomb() {
