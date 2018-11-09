@@ -5,23 +5,32 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.pratikvelani.minesweeper.GdxGame;
 import com.pratikvelani.minesweeper.actors.TileActor;
 import com.pratikvelani.minesweeper.g3d.ClickAdapter;
@@ -29,6 +38,7 @@ import com.pratikvelani.minesweeper.g3d.EnvironmentCubemap;
 //import com.pratikvelani.minesweeper.g3d.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.pratikvelani.minesweeper.toolbox.Assets;
+import com.pratikvelani.minesweeper.ui.InGameUI;
 
 import java.util.ArrayList;
 
@@ -52,6 +62,8 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     private FirstPersonCameraController firstPersonCameraController;
 
+    private InGameUI ui;
+
     //private ArrayList<BaseActor> models = new ArrayList<BaseActor>();
     private ArrayList<TileActor> tilesModels = new ArrayList<TileActor>();
     private float bombFactor = 0.1f;
@@ -72,6 +84,15 @@ public class GameScreen extends ClickAdapter implements Screen {
     private DirectionalLight directionalLight;
 
     EnvironmentCubemap envCubemap;
+
+
+    private Button exitButton;
+    private Matrix4 tmpMat4 = new Matrix4();
+    private Matrix4 transform = new Matrix4();
+    private Vector3 position = new Vector3(0, 0, 50);
+    private Vector3 sizeVec = new Vector3(0,0,0);
+
+    private ModelInstance debugBox;
 
 
     public GameScreen(GdxGame game) {
@@ -127,7 +148,19 @@ public class GameScreen extends ClickAdapter implements Screen {
             modelBatch.render(actor, environment);
         }
 
+        //modelBatch.render(debugBox, environment);
+
         modelBatch.end();
+
+
+        ui.render(delta);
+
+        //transform.setToTranslation(position).rotate(Vector3.Z, cam.direction);
+        /*spriteBatch.setProjectionMatrix(tmpMat4.set(cam.combined).mul(transform));
+        spriteBatch.begin();
+        exitButton.draw(spriteBatch, 1.0f);
+        spriteBatch.end();*/
+
 
         /*spriteBatch.begin();
         spriteBatch.draw(Assets.getInstance().getTexture(Assets.TEXTURE_CROSSHAIR), STAGE_WIDTH/2-25, STAGE_HEIGHT/2-25, 50, 50);
@@ -218,8 +251,6 @@ public class GameScreen extends ClickAdapter implements Screen {
     }
 
     private void setupEnvironment () {
-        stage2d = new Stage();
-
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         //environment.add(new SpotLight().set(Color.RED, new Vector3(0, 0, 20), new Vector3(0, 0, 0), 100.0f, 50.0f, 50.0f));
@@ -235,8 +266,10 @@ public class GameScreen extends ClickAdapter implements Screen {
         cam.position.set(0f, 0f, 0f);
         cam.lookAt(0,0,0);
         cam.near = 1f;
-        cam.far = 300f;
+        cam.far = 1000f;
         cam.update();
+
+        stage2d = new Stage(new ScalingViewport(Scaling.stretch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), new OrthographicCamera()), spriteBatch);
 
 
         firstPersonCameraController = new FirstPersonCameraController(cam);
@@ -255,15 +288,37 @@ public class GameScreen extends ClickAdapter implements Screen {
         crosshair.setPosition(STAGE_WIDTH/2-crosshair.getWidth()/2,STAGE_HEIGHT/2-crosshair.getHeight()/2);
         stage2d.addActor(crosshair);
 
-        TextButton button = new TextButton("Exit", Assets.getInstance().getUISkin());
-        button.addListener(new ClickListener() {
+        ui = new InGameUI();
+        ui.setCamera(cam);
+        ui.transform.translate(0, 0, 300);
+        ui.transform.rotate(Vector3.Y, 180);
+
+        /*transform.translate(0, 0, 300);
+        transform.rotate(Vector3.Y, 180);
+        exitButton = new TextButton("Exit", Assets.getInstance().getUISkin());
+        exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 Gdx.app.exit();
                 super.clicked(event, x, y);
             }
         });
-        stage2d.addActor(button);
+        exitButton.setOrigin(Align.center);
+
+        sizeVec.set(40, 20, 40);
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        Model model = modelBuilder.createBox(sizeVec.x, sizeVec.y, sizeVec.z,
+                new Material(ColorAttribute.createDiffuse(com.badlogic.gdx.graphics.Color.RED)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+
+        debugBox = new ModelInstance(model);
+        debugBox.calculateTransforms();
+
+        transform.getTranslation(position);
+        debugBox.transform.translate(position.x - exitButton.getWidth()/2, position.y + exitButton.getHeight()/2, position.z);*/
+
+        //stage2d.addActor(button);
 
         envCubemap = new EnvironmentCubemap(Gdx.files.internal("cubemap/px.tga"), Gdx.files.internal("cubemap/nx.tga"),
                 Gdx.files.internal("cubemap/py.tga"), Gdx.files.internal("cubemap/ny.tga"),
@@ -399,7 +454,12 @@ public class GameScreen extends ClickAdapter implements Screen {
         Ray ray = cam.getPickRay(screenX, screenY);
         int result = -1;
         float distance = -1;
-        Vector3 position = new Vector3();
+
+        result = ui.getClickResult(screenX, screenY);
+        if (result > -1) {
+            return result;
+        }
+
         for (int i = 0; i < tilesModels.size(); ++i) {
             final ModelInstance instance = tilesModels.get(i);
             instance.transform.getTranslation(position);
@@ -410,10 +470,6 @@ public class GameScreen extends ClickAdapter implements Screen {
                 result = i;
                 distance = dist2;
             }
-            /*if (Intersector.intersectRaySphere(ray, position, ((TileActor) instance).radius, null)) {
-                result = i;
-                distance = dist2;
-            }*/
         }
         return result;
     }

@@ -15,6 +15,8 @@ public class FirstPersonCameraController extends InputAdapter {
     private float velocity = 5;
     private float degreesPerPixel = 0.5f;
     private final Vector3 tmp = new Vector3();
+    private final Vector3 tmp2 = new Vector3();
+    private final Vector3 tmp3 = new Vector3();
 
     public FirstPersonCameraController (Camera camera) {
         this.camera = camera;
@@ -34,12 +36,21 @@ public class FirstPersonCameraController extends InputAdapter {
 
     @Override
     public boolean touchDragged (int screenX, int screenY, int pointer) {
-        float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
+        /*float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
         float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
 
         camera.direction.rotate(camera.up, deltaX);
         tmp.set(camera.direction).crs(camera.up).nor();
-        camera.direction.rotate(tmp, deltaY);
+        camera.direction.rotate(tmp, deltaY);*/
+
+        float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
+        float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
+        camera.direction.rotate(camera.up, deltaX);
+        Vector3 oldPitchAxis = tmp.set(camera.direction).crs(camera.up).nor();
+        Vector3 newDirection = tmp2.set(camera.direction).rotate(tmp, deltaY);
+        Vector3 newPitchAxis = tmp3.set(tmp2).crs(camera.up);
+        if (!newPitchAxis.hasOppositeDirection(oldPitchAxis))
+            camera.direction.set(newDirection);
 
 
         /*Gdx.app.log("", "" + camera.direction);
