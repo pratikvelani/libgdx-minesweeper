@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -94,7 +95,6 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     private ModelInstance debugBox;
 
-
     public GameScreen(GdxGame game) {
         super ();
         this.game = game;
@@ -123,8 +123,8 @@ public class GameScreen extends ClickAdapter implements Screen {
 
     @Override
     public void render(float delta) {
-        firstPersonCameraController.update(delta);
 
+        firstPersonCameraController.update(delta);
         directionalLight.setDirection(cam.direction);
 
         /*Gdx.gl.glClearColor(1, 0, 0, 1);
@@ -264,7 +264,6 @@ public class GameScreen extends ClickAdapter implements Screen {
         cam = new PerspectiveCamera(FOV, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         //cam.position.set(0f, 0f, 50f);
         cam.position.set(0f, 0f, 0f);
-        cam.lookAt(0,0,0);
         cam.near = 1f;
         cam.far = 1000f;
         cam.update();
@@ -290,8 +289,9 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         ui = new InGameUI();
         ui.setCamera(cam);
-        ui.transform.translate(0, 0, 300);
-        ui.transform.rotate(Vector3.Y, 180);
+        ui.transform.translate(0, 0, -200);
+        //ui.transform.rotate(Vector3.Y, 180);
+        ui.showStart();
 
         /*transform.translate(0, 0, 300);
         transform.rotate(Vector3.Y, 180);
@@ -406,6 +406,7 @@ public class GameScreen extends ClickAdapter implements Screen {
         TileActor centerTile = tiles[centerX][centerY];
 
         cam.position.set (centerTile.point.x, centerTile.point.y, -50);
+        cam.direction.set(Vector2.Y, -180);
     }
 
     private int getNeighbourCount (int x, int y) {

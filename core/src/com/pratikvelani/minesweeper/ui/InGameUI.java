@@ -19,7 +19,8 @@ public class InGameUI {
     private SpriteBatch spriteBatch;
 
     private Table rootTable;
-    private TextButton restartButton, exitButton;
+    private Label label1;
+    private TextButton button1, button2;
 
     private Vector3 position = new Vector3();
     public Matrix4 projectionMatrix = new Matrix4();
@@ -34,17 +35,17 @@ public class InGameUI {
     private void init () {
         spriteBatch = new SpriteBatch();
 
-        Label nameLabel = new Label("Menu", Assets.getInstance().getUISkin());
+        label1 = new Label("Menu", Assets.getInstance().getUISkin());
 
-        restartButton = new TextButton("Restart", Assets.getInstance().getUISkin());
-        exitButton = new TextButton("Exit", Assets.getInstance().getUISkin());
+        button1 = new TextButton("Restart", Assets.getInstance().getUISkin());
+        button2 = new TextButton("Exit", Assets.getInstance().getUISkin());
 
         rootTable = new Table();
-        rootTable.add(nameLabel);
+        rootTable.add(label1);
         rootTable.row();
-        rootTable.pad(30f).add(restartButton);
+        rootTable.pad(30f).add(button1);
         rootTable.row();
-        rootTable.pad(30f).add(exitButton);
+        rootTable.pad(30f).add(button2);
 
 
     }
@@ -54,13 +55,15 @@ public class InGameUI {
     }
 
     public void render (float delta) {
-        spriteBatch.setProjectionMatrix(projectionMatrix.set(camera.combined).mul(transform));
-        spriteBatch.begin();
-        rootTable.draw(spriteBatch, 1.0f);
-        spriteBatch.end();
+        if (rootTable.isVisible()) {
+            spriteBatch.setProjectionMatrix(projectionMatrix.set(camera.combined).mul(transform));
+            spriteBatch.begin();
+            rootTable.draw(spriteBatch, 1.0f);
+            spriteBatch.end();
+        }
     }
 
-    public int getClickResult (int screenX, int screenY) {
+    /*public int getClickResult (int screenX, int screenY) {
         Ray ray = camera.getPickRay(screenX, screenY);
         int result = -1;
         float distance = -1;
@@ -77,5 +80,41 @@ public class InGameUI {
         }
 
         return result;
+    }*/
+
+    public int getClickResult (int screenX, int screenY) {
+        Ray ray = camera.getPickRay(screenX, screenY);
+        int result = -1;
+        float distance = -1;
+
+        transform.getTranslation(position);
+
+        if (Intersector.intersectRayBoundsFast(ray, position, new Vector3(40, 40, 20) )) {
+            Gdx.app.log("RAY", "Table Clicked");
+        }
+
+        return result;
+    }
+
+    public void showStart () {
+        label1.setText("Minesweeper");
+        button1.setText("New Game");
+        rootTable.setVisible(true);
+    }
+
+    public void showLevelComplete () {
+        label1.setText("You Won!");
+        button1.setText("Restart");
+        rootTable.setVisible(true);
+    }
+
+    public void showLevelLost () {
+        label1.setText("You Lost! Try Again.");
+        button1.setText("Restart");
+        rootTable.setVisible(true);
+    }
+
+    public void hide () {
+        rootTable.setVisible(false);
     }
 }
