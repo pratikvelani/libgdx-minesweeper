@@ -74,6 +74,7 @@ public class GameScreen extends ClickAdapter implements Screen {
     private int[][] tileMap = new int[cols][rows];
     private int[][] map = new int[cols][rows];
     private TileActor[][] tiles = new TileActor[cols][rows];
+    private int tilesCount = 0;
 
     public ModelInstance ground;
 
@@ -85,7 +86,6 @@ public class GameScreen extends ClickAdapter implements Screen {
     private DirectionalLight directionalLight;
 
     EnvironmentCubemap envCubemap;
-
 
     private Button exitButton;
     private Matrix4 tmpMat4 = new Matrix4();
@@ -289,7 +289,7 @@ public class GameScreen extends ClickAdapter implements Screen {
 
         ui = new InGameUI();
         ui.setCamera(cam);
-        ui.transform.translate(0, 0, -200);
+        ui.transform.translate(0, -250, -400);
         //ui.transform.rotate(Vector3.Y, 180);
         ui.showStart();
 
@@ -339,6 +339,9 @@ public class GameScreen extends ClickAdapter implements Screen {
         for (y=0; y<rows; y++) {
             for (x = 0; x < cols; x++) {
                 map[x][y] = (Math.random() < bombFactor) ? 5 : 0;
+                if (map[x][y] == 0) {
+                    tilesCount ++;
+                }
             }
         }
 
@@ -501,7 +504,13 @@ public class GameScreen extends ClickAdapter implements Screen {
         TileActor actor = tiles[x][y];
         actor.open ();
 
-        if (actor.type == 0) {
+        tilesCount--;
+        Gdx.app.log("TILES", "" + tilesCount);
+        if (actor.isBomb() == true) {
+            Gdx.app.log("GAME", "OVER");
+        } else if (tilesCount == 0) {
+            Gdx.app.log("GAME", "COMPLETE");
+        } else if (actor.type == 0) {
             floodFill(actor.index.x, actor.index.y);
         }
     }

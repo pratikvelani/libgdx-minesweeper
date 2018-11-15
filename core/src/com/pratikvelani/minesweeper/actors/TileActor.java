@@ -156,6 +156,6 @@ public class TileActor extends BaseActor {
     }
 
     public Boolean isBomb() {
-        return face == 5;
+        return type == 5;
     }
 }

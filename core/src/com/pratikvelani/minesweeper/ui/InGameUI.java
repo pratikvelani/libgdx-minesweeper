@@ -41,13 +41,11 @@ public class InGameUI {
         button2 = new TextButton("Exit", Assets.getInstance().getUISkin());
 
         rootTable = new Table();
-        rootTable.add(label1);
-        rootTable.row();
-        rootTable.pad(30f).add(button1);
-        rootTable.row();
-        rootTable.pad(30f).add(button2);
-
-
+        /*rootTable.add(label1);
+        rootTable.row();*/
+        rootTable.add(button1);
+        /*rootTable.row();
+        rootTable.pad(30f).add(button2);*/
     }
 
     public void setCamera (PerspectiveCamera camera) {
@@ -98,7 +96,7 @@ public class InGameUI {
 
     public void showStart () {
         label1.setText("Minesweeper");
-        button1.setText("New Game");
+        button1.setText("Restart");
         rootTable.setVisible(true);
     }
 
